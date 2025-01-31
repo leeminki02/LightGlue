@@ -80,6 +80,9 @@ def plot_images(imgs, titles=None, cmaps="gray", dpi=100, pad=0.5, adaptive=True
             ax[i].set_title(titles[i])
     fig.tight_layout(pad=pad)
 
+    # cid = fig.canvas.mpl_connect('button_press_event', onclick)
+
+
 
 def plot_keypoints(kpts, colors="lime", ps=4, axes=None, a=1.0):
     """Plot keypoints for existing images.
@@ -98,6 +101,20 @@ def plot_keypoints(kpts, colors="lime", ps=4, axes=None, a=1.0):
         if isinstance(k, torch.Tensor):
             k = k.cpu().numpy()
         ax.scatter(k[:, 0], k[:, 1], c=c, s=ps, linewidths=0, alpha=alpha)
+    
+    # def onclick(event):
+    #     print('%s click: button=%d, x=%d, y=%d, xdata=%f, ydata=%f' %
+    #         ('double' if event.dblclick else 'single', event.button,
+    #         event.x, event.y, event.xdata, event.ydata))
+    #     # get nearest keypoint
+    #     k = torch.argmin(torch.linalg.norm(kpts[0] - torch.tensor([event.xdata, event.ydata]).cuda(), dim=1))
+    #     # nearest keypoint: kpts[0][k]
+    #     nk = kpts[0][k].cpu().numpy()
+    #     ax.scatter(nk[0], nk[1], c='red', s=ps*2, linewidths=0, alpha=1)
+    #     print(nk.tolist())
+
+    # fig = plt.gcf()
+    # fig.canvas.mpl_connect('button_press_event', onclick)
 
 
 def plot_matches(kpts0, kpts1, color=None, lw=1.5, ps=4, a=1.0, labels=None, axes=None):
@@ -182,3 +199,6 @@ def add_text(
 def save_plot(path, **kw):
     """Save the current figure without any white margin."""
     plt.savefig(path, bbox_inches="tight", pad_inches=0, **kw)
+
+def show():
+    plt.show()
