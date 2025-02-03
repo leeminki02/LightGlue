@@ -62,8 +62,12 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
 
         # Draw contours on a copy of the original image
         img_with_contours = img.copy()
-        cv2.drawContours(img_with_contours, filtered_contours, -1, (0, 0, 255), 5)  # Red contours
-
+        cv2.drawContours(img_with_contours, filtered_contours, -1, (0, 0, 255), 10)  # Red contours
+        largest_contour = max(filtered_contours, key=cv2.contourArea)
+        x,y,w,h = cv2.boundingRect(largest_contour)
+        cv2.drawContours(img_with_contours, [largest_contour], -1, (0, 255, 0), 10)  # Green largest contour
+        cv2.rectangle(img_with_contours, (x, y), (x+w, y+h), (255, 0, 0), 10)  # Blue bounding box
+        cv2.imwrite("results/"+image_path[8:], img_with_contours)
         return img_with_contours, filtered_contours, thresh, img
 
     except Exception as e:
@@ -142,11 +146,14 @@ m_kpts0, m_kpts1 = kpts0[matches[..., 0]], kpts1[matches[..., 1]]
 axes = viz2d.plot_images([image0, image1])
 viz2d.plot_matches(m_kpts0, m_kpts1, color="lime", lw=0.2)
 viz2d.add_text(0, f'Stop after {matches01["stop"]} layers')
+viz2d.save_plot("results/"+img0[:-4]+"_"+img1[:-4]+"_matches_"+str(use_contour)+".jpg")
 
 kpc0, kpc1 = viz2d.cm_prune(matches01["prune0"]), viz2d.cm_prune(matches01["prune1"])
 viz2d.plot_images([image0, image1])
 # viz2d.plot_keypoints([okpt0, okpt1], colors=["red", "red"], ps=6)
 viz2d.plot_keypoints([kpts0, kpts1], colors=[kpc0, kpc1], ps=6)
+
+viz2d.save_plot("results/"+img0[:-4]+"_"+img1[:-4]+"_keypoints_"+str(use_contour)+".jpg")
 
 viz2d.show()
 cv2.waitKey(0)

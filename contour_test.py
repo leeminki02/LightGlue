@@ -26,7 +26,7 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
         img = cv2.imread(image_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # reverse color
-        gray = cv2.bitwise_not(gray)
+        # gray = cv2.bitwise_not(gray)
 
         # Blur the image to reduce noise
         blurred = cv2.GaussianBlur(gray, blur_kernel, 0)
@@ -63,7 +63,7 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
 
 
 # Example usage:
-image_path = "assets/IMG_2849.jpg"  # Replace with your image path
+image_path = "assets/IMG_2914.jpg"  # Replace with your image path
 img_with_contours, contours, thresh, original_image = find_contours(image_path, min_area=10000) # Example min area. Adjust as needed.
 
 if img_with_contours is not None:
@@ -97,6 +97,8 @@ if img_with_contours is not None:
         print(f"Bounding box of largest contour: x={x}, y={y}, w={w}, h={h}")
         cv2.rectangle(img_with_contours, (x,y), (x+w, y+h), (0,255,0), 5) # Draw bounding box
         cv2.imshow("Image with Bounding Box", img_with_contours)
+        cv2.imwrite("results/"+image_path[8:-4]+"_contour.jpg", img_with_contours)
+        cv2.imwrite("results/"+image_path[8:-4]+"_thresh.jpg", thresh)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
