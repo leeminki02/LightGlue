@@ -9,8 +9,9 @@ from lightglue import viz2d
 import cv2
 import torch
 import numpy as np
+import time
 
-def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", threshold_value=127,  
+def find_contours(image_path, blur_kernel=(13, 13), threshold_method="simple", threshold_value=127,  
                   min_area=100, max_area=None):
     """
     Finds contours in an image.
@@ -34,7 +35,7 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
     try:
         img = cv2.imread(image_path)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # reverse color
+        # reverse color: the detecting object is dark while the background is light
         gray = cv2.bitwise_not(gray)
 
         # Blur the image to reduce noise
@@ -44,6 +45,7 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
         if threshold_method == "adaptive":
             thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)  # Adjust block size (11) and C (2) as needed
         elif threshold_method == "simple":
+            # The simple threshold method is simple yet strong -- use simple for most easy-to-detect cases
             _, thresh = cv2.threshold(blurred, threshold_value, 255, cv2.THRESH_BINARY)
         else:
             raise ValueError("Invalid threshold_method. Choose 'adaptive' or 'simple'.")
@@ -63,10 +65,15 @@ def find_contours(image_path, blur_kernel=(17, 17), threshold_method="simple", t
         # Draw contours on a copy of the original image
         img_with_contours = img.copy()
         cv2.drawContours(img_with_contours, filtered_contours, -1, (0, 0, 255), 10)  # Red contours
+        # red contours are over every contours detected
         largest_contour = max(filtered_contours, key=cv2.contourArea)
+        # find for the largest contour, which we may be finding.
+        # To precisely select which object to create contour, we may use bounding boxes if needed.
         x,y,w,h = cv2.boundingRect(largest_contour)
         cv2.drawContours(img_with_contours, [largest_contour], -1, (0, 255, 0), 10)  # Green largest contour
+        # green contour line is over the largest (selected) contour
         cv2.rectangle(img_with_contours, (x, y), (x+w, y+h), (255, 0, 0), 10)  # Blue bounding box
+        # blue bounding box is over the largest (selected) contour
         cv2.imwrite("results/"+image_path[8:], img_with_contours)
         return img_with_contours, filtered_contours, thresh, img
 
@@ -79,22 +86,23 @@ images = Path("assets")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 'mps', 'cpu'
 
+
 extractor = SuperPoint(max_num_keypoints=2048).eval().to(device)  # load the extractor
 matcher = LightGlue(features="superpoint").eval().to(device)
 
-img0 = "IMG_2849.jpg"
-img1 = "IMG_2850.jpg"
+img0 = "sacre_coeur1.jpg"
+img1 = "sacre_coeur2.jpg"
 
-image0 = load_image(images / "IMG_2849.jpg")
-image1 = load_image(images / "IMG_2850.jpg")
+image0 = load_image(images / "sacre_coeur1.jpg")
+image1 = load_image(images / "sacre_coeur2.jpg")
 
 feats0 = extractor.extract(image0.to(device))
 feats1 = extractor.extract(image1.to(device))
-
 img_with_contours0, contours0, thresh0, original_image0 = find_contours("assets/"+img0, min_area=10000) # Example min area. Adjust as needed.
 img_with_contours1, contours1, thresh1, original_image1 = find_contours("assets/"+img1, min_area=10000) # Example min area. Adjust as needed.
 
-use_contour = True
+ti = time.time()
+use_contour = False
 
 if use_contour:
 
@@ -154,6 +162,8 @@ viz2d.plot_images([image0, image1])
 viz2d.plot_keypoints([kpts0, kpts1], colors=[kpc0, kpc1], ps=6)
 
 viz2d.save_plot("results/"+img0[:-4]+"_"+img1[:-4]+"_keypoints_"+str(use_contour)+".jpg")
+tf = time.time()
+print(f"Time {str(use_contour)}: {tf-ti}")
 
 viz2d.show()
 cv2.waitKey(0)
