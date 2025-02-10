@@ -122,10 +122,10 @@ cam_intrinsics = [[camconfig.left_cam.fx, 0, camconfig.left_cam.cx],
                         [0, camconfig.left_cam.fy, camconfig.left_cam.cy],
                         [0, 0, 1]]
                 # left and right camera has same camera settings: use single cam_intrinsics for both cameras.
-left_extrinsic = [[1, 0, 0, -0.075],
+left_extrinsic = [[1, 0, 0, -0.06],
                   [0, 1, 0, 0],
                   [0, 0, 1, 0]]
-right_extrinsic = [[1, 0, 0, 0.075],
+right_extrinsic = [[1, 0, 0, 0.06],
                     [0, 1, 0, 0],
                     [0, 0, 1, 0]]
 P_left = np.dot(cam_intrinsics, left_extrinsic)
